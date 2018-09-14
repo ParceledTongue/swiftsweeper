@@ -1,10 +1,16 @@
 import Rainbow
 
-struct Grid {
+struct Grid: Sequence {
   let width: Int
   let height: Int
   let allPositions: [Position]
   private var grid: [[Bool]]
+
+  typealias Iterator = IndexingIterator<[Grid.Position]>
+
+  func makeIterator() -> Grid.Iterator {
+    return allPositions.makeIterator()
+  }
 
   struct Position: Equatable, Hashable {
     let row: Int
@@ -19,7 +25,7 @@ struct Grid {
   init(width: Int, height: Int) {
     self.width = width
     self.height = height
-    // array of all positions for convenient iteration
+    // array of all positions for sequencing
     // (left to right and then top to bottom)
     let allRows = Array(0..<height)
     let allCols = Array(0..<width)
@@ -32,15 +38,15 @@ struct Grid {
   }
 
   mutating func clear() {
-    for p in allPositions {
+    for p in self {
       setMine(p, false)
     }
   }
 
-  mutating func generate(mines: Int, start: Position) {
+  mutating func populate(mines: Int, start: Position) {
     clear()
     let invalidPositions = [start] + neighborsOf(start)
-    var openPositions = Set(allPositions).subtracting(invalidPositions)
+    var openPositions = Set(self).subtracting(invalidPositions)
     assert(mines <= openPositions.count, "more mines than spaces")
 
     for _ in 0..<mines {
@@ -63,8 +69,10 @@ struct Grid {
   }
 
   private func neighborsOf(_ p: Position) -> [Position] {
-    let neighborRows = Array(max(0, p.row - 1)...min(p.row + 1, height - 1))
-    let neighborCols = Array(max(0, p.col - 1)...min(p.col + 1, width - 1))
+    let neighborRows =
+      Array(Swift.max(0, p.row - 1)...Swift.min(p.row + 1, height - 1))
+    let neighborCols =
+      Array(Swift.max(0, p.col - 1)...Swift.min(p.col + 1, width - 1))
     return neighborRows.flatMap { r in
       neighborCols.map { c in Position(r, c) }
     }.filter { $0 != p } // the position isn't its own neighbor
@@ -97,7 +105,7 @@ struct Grid {
   }
 
   private func printWith(renderer: (Position) -> String) {
-    for p in allPositions {
+    for p in self {
       let endOfRow = (p.col == width - 1)
       print(renderer(p), terminator: endOfRow ? "\n" : " ")
     }
