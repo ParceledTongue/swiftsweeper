@@ -1,4 +1,5 @@
 .DS_Store
+.swiftlint.yml
 /.build
 /Packages
 /*.xcodeproj
