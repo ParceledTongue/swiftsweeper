@@ -69,10 +69,10 @@ struct Grid: Sequence {
   }
 
   private func neighborsOf(_ p: Position) -> [Position] {
-    let neighborRows =
-      Array(Swift.max(0, p.row - 1)...Swift.min(p.row + 1, height - 1))
-    let neighborCols =
-      Array(Swift.max(0, p.col - 1)...Swift.min(p.col + 1, width - 1))
+    let neighborRows = ((p.row - 1)...(p.row + 1))
+      .clamped(to: 0...(height - 1)) // don't include out-of-bounds rows
+    let neighborCols = ((p.col - 1)...(p.col + 1))
+      .clamped(to: 0...(width - 1)) // don't include out-of-bounds cols
     return neighborRows.flatMap { r in
       neighborCols.map { c in Position(r, c) }
     }.filter { $0 != p } // the position isn't its own neighbor
