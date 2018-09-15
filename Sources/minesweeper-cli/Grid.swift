@@ -1,128 +1,57 @@
-import Rainbow
+struct Grid {
+  private var dict: [Coord: Bool]
+  let coords: Set<Coord>
 
-struct Grid: Sequence {
-  let width: Int
-  let height: Int
-  let allPositions: [Position]
-  private var grid: [[Bool]]
-
-  typealias Iterator = IndexingIterator<[Grid.Position]>
-
-  func makeIterator() -> Grid.Iterator {
-    return allPositions.makeIterator()
-  }
-
-  struct Position: Equatable, Hashable {
-    let row: Int
-    let col: Int
-
-    init(_ row: Int, _ col: Int) {
-      self.row = row
-      self.col = col
-    }
-  }
-
+  // Creates an empty rectangular grid.
   init(width: Int, height: Int) {
-    self.width = width
-    self.height = height
-    // array of all positions for sequencing
-    // (left to right and then top to bottom)
-    let allRows = Array(0..<height)
-    let allCols = Array(0..<width)
-    allPositions = allRows.flatMap { r in
-      allCols.map { c in Position(r, c) }
+    let rectangleCoords = (0..<height).flatMap { row in
+      (0..<width).map { col in Coord(row, col) }
     }
-    // start with an empty grid
-    let emptyRow = Array(repeating: false, count: width)
-    self.grid = Array(repeating: emptyRow, count: height)
+    self.init(withCoords: rectangleCoords)
   }
 
-  mutating func clear() {
-    for p in self {
-      setMine(p, false)
+  // Creates an empty grid of an arbitrary shape.
+  init<S: Sequence>(withCoords: S) where S.Element == Coord {
+    dict = Dictionary()
+    for c in withCoords {
+      dict[c] = false
     }
+    coords = Set(dict.keys)
   }
 
-  mutating func populate(mines: Int, start: Position) {
-    clear()
-    let invalidPositions = [start] + neighborsOf(start)
-    var openPositions = Set(self).subtracting(invalidPositions)
-    assert(mines <= openPositions.count, "more mines than spaces")
+  subscript(c: Coord) -> Bool {
+    return dict[c] ?? false // not a mine if it's not on the grid
+  }
 
-    for _ in 0..<mines {
-      let minePosition = openPositions.randomElement()!
-      setMine(minePosition, true)
-      openPositions.remove(minePosition)
+  mutating func clearMines() {
+    for c in coords {
+      dict[c] = false
     }
   }
 
-  func countNeighbors(_ p: Position) -> Int {
-    return neighborsOf(p).filter { isMine($0) }.count
-  }
+  mutating func populate(mines: Int, start: Coord) {
+    clearMines()
+    // we never place a mine at or adjacent to the starting coord
+    let invalidCoords = Set([start]) + neighborsOf(start)
+    let validCoords = coords.subtracting(invalidCoords)
+    assert(mines <= validCoords.count, "more mines than spaces")
 
-  func isMine(_ p: Position) -> Bool {
-    return grid[p.row][p.col]
-  }
-
-  private mutating func setMine(_ p: Position, _ state: Bool) {
-    grid[p.row][p.col] = state
-  }
-
-  private func neighborsOf(_ p: Position) -> [Position] {
-    let neighborRows = ((p.row - 1)...(p.row + 1))
-      .clamped(to: 0...(height - 1)) // don't include out-of-bounds rows
-    let neighborCols = ((p.col - 1)...(p.col + 1))
-      .clamped(to: 0...(width - 1)) // don't include out-of-bounds cols
-    return neighborRows.flatMap { r in
-      neighborCols.map { c in Position(r, c) }
-    }.filter { $0 != p } // the position isn't its own neighbor
-  }
-
-  // TODO move everything below to a renderer
-
-  private struct DisplayStrings {
-    static let bomb = "*".lightBlack.bold
-    static let space = "·"
-  }
-
-  func prettyPrint() {
-    printWith {
-      return isMine($0) ? DisplayStrings.bomb : DisplayStrings.space
+    for mineCoord in validCoords.shuffled().prefix(mines) {
+      dict[mineCoord] = true
     }
   }
 
-  func prettyPrintWithHints() {
-    printWith {
-      if isMine($0) {
-        return DisplayStrings.bomb
-      } else {
-        let neighborCount = countNeighbors($0)
-        return neighborCount == 0
-          ? DisplayStrings.space
-          : Grid.coloredNumberString(neighborCount)
-      }
-    }
+  func countNeighbors(_ c: Coord) -> Int {
+    return neighborsOf(c).filter { self[$0] }.count
   }
 
-  private func printWith(renderer: (Position) -> String) {
-    for p in self {
-      let endOfRow = (p.col == width - 1)
-      print(renderer(p), terminator: endOfRow ? "\n" : " ")
+  private func neighborsOf(_ c: Coord) -> [Coord] {
+    let neighborCoords = ((c.row - 1)...(c.row + 1)).flatMap { row in
+      ((c.col - 1)...(c.col + 1)).map { col in Coord(row, col) }
     }
-  }
-
-  private static func coloredNumberString(_ num: Int) -> String {
-    let str = String(num)
-    switch num {
-    case 1: return str.lightBlue
-    case 2: return str.green
-    case 3: return str.lightRed
-    case 4: return str.blue
-    case 5: return str.red
-    case 6: return str.cyan
-    case 7: return str.black
-    case 8: return str.lightBlack
-    default: return str
+    return neighborCoords.filter {
+      $0 != c // the coord isn't its own neighbor
+      && coords.contains($0) // only include coords in the grid
     }
   }
 }
