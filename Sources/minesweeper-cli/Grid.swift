@@ -45,11 +45,11 @@ struct Grid {
     }
   }
 
-  func countNeighbors(_ c: Coord) -> Int {
+  func adjacentMines(_ c: Coord) -> Int {
     return neighborsOf(c).filter { self[$0] }.count
   }
 
-  private func neighborsOf(_ c: Coord) -> [Coord] {
+  func neighborsOf(_ c: Coord) -> [Coord] {
     let neighborCoords = Coord.rectangle(
       from: Coord(c.row - 1, c.col - 1),
       to: Coord(c.row + 1, c.col + 1)
