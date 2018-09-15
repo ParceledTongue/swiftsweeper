@@ -1,29 +1,37 @@
 struct Game {
-  let grid: Grid
+  var grid: Grid
+  let mines: Int
   var cursorAt: Coord
   var revealed: Set<Coord>
   var flagged: Set<Coord>
 
-  private init(gameGrid: Grid, cursorStart: Coord) {
-    grid = gameGrid
-    cursorAt = cursorStart
-    revealed = Set()
-    flagged = Set()
+  private init(grid: Grid, mines: Int, cursorStart: Coord) {
+    self.grid = grid
+    self.mines = mines
+    self.cursorAt = cursorStart
+    self.revealed = Set()
+    self.flagged = Set()
   }
 
   // MARK: Game State
 
   enum State {
-    case lost, won, playing
+    case new, playing, won, lost
   }
 
   var state: State {
-    if revealed.contains(where: { grid[$0] }) {
+    if revealed.isEmpty {
+      // revealed nothing
+      return .new
+    } else if revealed.contains(where: { grid[$0] }) {
+      // revealed a mine
       return .lost
     } else {
       let allSafe = grid.coords.filter { !grid[$0] }
       return revealed == allSafe
+        // revealed all safe spots
         ? .won
+        // revealed some safe spots
         : .playing
     }
   }
@@ -58,6 +66,12 @@ struct Game {
     if flagged.contains(cursorAt) {
       return // never reveal a flagged spot
     }
+
+    if state == .new {
+      // populate the grid if this is our first reveal
+      grid.populateRandom(mines: mines, start: cursorAt)
+    }
+
     reveal(cursorAt)
     // if you've already flagged the right number of a coord's neighbors,
     // you can reveal all the rest by revealing the coord itself
@@ -93,28 +107,28 @@ struct Game {
   // MARK: Game Initializers
 
   static func newBeginner() -> Game {
-    let topLeft = Coord(0, 0)
-    var beginnerGrid = Grid(width: 8, height: 8)
-    beginnerGrid.populateRandom(mines: 10, start: topLeft)
-    return Game(gameGrid: beginnerGrid, cursorStart: topLeft)
+    return newRectangular(width: 8, height: 8, mines: 10)
   }
 
   static func newIntermediate() -> Game {
-    let topLeft = Coord(0, 0)
-    var intermediateGrid = Grid(width: 16, height: 16)
-    intermediateGrid.populateRandom(mines: 40, start: topLeft)
-    return Game(gameGrid: intermediateGrid, cursorStart: topLeft)
+    return newRectangular(width: 16, height: 16, mines: 40)
   }
 
   static func newExpert() -> Game {
+    return newRectangular(width: 24, height: 24, mines: 99)
+  }
+
+  static func newRectangular(width: Int, height: Int, mines: Int) -> Game {
     let topLeft = Coord(0, 0)
-    var expertGrid = Grid(width: 24, height: 24)
-    expertGrid.populateRandom(mines: 99, start: topLeft)
-    return Game(gameGrid: expertGrid, cursorStart: topLeft)
+    let grid = Grid(width: width, height: height)
+    return Game(grid: grid, mines: mines, cursorStart: topLeft)
   }
 
   static func newCircular(radius: Int, mines: Int) -> Game {
     let center = Coord(radius, radius)
+
+    // We create the square of coords that bounds the circle, then filter out
+    // all the coords too far from the center to be in the circle. Math!
     let distToCenter = { (c: Coord) -> Float in
       let xDist = Float(c.col - center.col)
       let yDist = Float(c.row - center.row)
@@ -124,8 +138,7 @@ struct Game {
       from: Coord(0, 0), to: Coord(radius * 2, radius * 2)
     ).filter { distToCenter($0) <= Float(radius) }
 
-    var circleGrid = Grid(withCoords: circle)
-    circleGrid.populateRandom(mines: mines, start: center)
-    return Game(gameGrid: circleGrid, cursorStart: center)
+    let circleGrid = Grid(withCoords: circle)
+    return Game(grid: circleGrid, mines: mines, cursorStart: center)
   }
 }
