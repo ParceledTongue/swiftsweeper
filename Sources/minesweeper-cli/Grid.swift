@@ -1,13 +1,14 @@
 struct Grid {
+
   private var dict: [Coord: Bool]
   let coords: Set<Coord>
 
   // Creates an empty rectangular grid.
   init(width: Int, height: Int) {
-    let rectangleCoords = (0..<height).flatMap { row in
-      (0..<width).map { col in Coord(row, col) }
-    }
-    self.init(withCoords: rectangleCoords)
+    self.init(withCoords: Coord.rectangle(
+      from: Coord(0, 0),
+      to: Coord(height - 1, width - 1))
+    )
   }
 
   // Creates an empty grid of an arbitrary shape.
@@ -29,14 +30,17 @@ struct Grid {
     }
   }
 
-  mutating func populate(mines: Int, start: Coord) {
-    clearMines()
+  mutating func populateRandom(mines: Int, start: Coord) {
     // we never place a mine at or adjacent to the starting coord
     let invalidCoords = Set([start]) + neighborsOf(start)
     let validCoords = coords.subtracting(invalidCoords)
     assert(mines <= validCoords.count, "more mines than spaces")
+    populate(mineCoords: validCoords.shuffled().prefix(mines))
+  }
 
-    for mineCoord in validCoords.shuffled().prefix(mines) {
+  mutating func populate<S: Sequence>(mineCoords: S) where S.Element == Coord {
+    clearMines()
+    for mineCoord in mineCoords {
       dict[mineCoord] = true
     }
   }
@@ -46,9 +50,10 @@ struct Grid {
   }
 
   private func neighborsOf(_ c: Coord) -> [Coord] {
-    let neighborCoords = ((c.row - 1)...(c.row + 1)).flatMap { row in
-      ((c.col - 1)...(c.col + 1)).map { col in Coord(row, col) }
-    }
+    let neighborCoords = Coord.rectangle(
+      from: Coord(c.row - 1, c.col - 1),
+      to: Coord(c.row + 1, c.col + 1)
+    )
     return neighborCoords.filter {
       $0 != c // the coord isn't its own neighbor
       && coords.contains($0) // only include coords in the grid
