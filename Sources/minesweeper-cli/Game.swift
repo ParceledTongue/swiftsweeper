@@ -11,7 +11,24 @@ struct Game {
     flagged = Set()
   }
 
-  // cursor movement
+  // MARK: Game State
+
+  enum State {
+    case lost, won, playing
+  }
+
+  var state: State {
+    if revealed.contains(where: { grid[$0] }) {
+      return .lost
+    } else {
+      let allSafe = grid.coords.filter { !grid[$0] }
+      return revealed == allSafe
+        ? .won
+        : .playing
+    }
+  }
+
+  // MARK: Cursor Movement
 
   mutating func moveUp() {
     moveCursorIfInBounds(to: cursorAt.north)
@@ -35,12 +52,11 @@ struct Game {
     }
   }
 
-  // revealing
+  // MARK: Revealing
 
   mutating func reveal() {
     if flagged.contains(cursorAt) {
-      // TODO maybe provide some kind of bell feedback
-      return
+      return // never reveal a flagged spot
     }
     reveal(cursorAt)
     // if you've already flagged the right number of a coord's neighbors,
@@ -64,7 +80,7 @@ struct Game {
     }
   }
 
-  // flagging
+  // MARK: Flagging
 
   mutating func flag() {
     if flagged.contains(cursorAt) {
@@ -74,7 +90,7 @@ struct Game {
     }
   }
 
-  // game initializers
+  // MARK: Game Initializers
 
   static func newBeginner() -> Game {
     let topLeft = Coord(0, 0)

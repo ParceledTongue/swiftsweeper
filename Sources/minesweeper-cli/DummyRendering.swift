@@ -25,7 +25,7 @@ func prettyPrintWithHints(grid: Grid) {
     } else if grid[$0] {
       return DisplayStrings.bomb
     } else {
-      let neighborCount = grid.countNeighbors($0)
+      let neighborCount = grid.adjacentMines($0)
       return neighborCount == 0
         ? DisplayStrings.empty
         : coloredNumberString(neighborCount)
