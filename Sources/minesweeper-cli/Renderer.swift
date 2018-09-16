@@ -131,4 +131,58 @@ struct Renderer {
       }
     }
   }
+
+  // surprisingly playable!
+  // doesn't do well with .swap
+  static func mahjongStyle(_ styleCase: StyleCase) -> String {
+    switch styleCase {
+    case let .icon(spaceType):
+      switch spaceType {
+      case .unknown: return "🀫"
+      case .flagged: return "🀃".red
+      case .bomb:    return "🀅".lightBlack
+      case .empty:   return "🀆"
+      case .space:   return " "
+      }
+    case let .number(n):
+      switch n {
+      case 1:  return "🀙"
+      case 2:  return "🀚"
+      case 3:  return "🀛"
+      case 4:  return "🀜"
+      case 5:  return "🀝"
+      case 6:  return "🀞"
+      case 7:  return "🀟"
+      case 8:  return "🀠"
+      default: return "🀪"
+      }
+    }
+  }
+
+  // this is the best one
+  // emojis aren't affected by .swap or .highlight
+  static func clockStyle(_ styleCase: StyleCase) -> String {
+    switch styleCase {
+    case let .icon(spaceType):
+      switch spaceType {
+      case .unknown: return "🕰 "
+      case .flagged: return "⏳"
+      case .bomb:    return "⏰"
+      case .empty:   return "🕛"
+      case .space:   return "  " // need an emoji-width thing here
+      }
+    case let .number(n):
+      switch n {
+      case 1:  return "🕐"
+      case 2:  return "🕑"
+      case 3:  return "🕒"
+      case 4:  return "🕓"
+      case 5:  return "🕔"
+      case 6:  return "🕕"
+      case 7:  return "🕖"
+      case 8:  return "🕗"
+      default: return "⁉️ "
+      }
+    }
+  }
 }

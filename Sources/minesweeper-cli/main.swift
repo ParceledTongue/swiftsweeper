@@ -3,7 +3,7 @@ import Foundation
 // watch the computer play a randomized circular game
 
 var g = Game.newCircular(radius: 8, mines: 35)
-let r = Renderer()
+let r = Renderer(style: Renderer.mahjongStyle, cursorMode: .highlight)
 
 func refresh() {
   for _ in 1...30 {
