@@ -3,12 +3,13 @@ import Foundation
 // watch the computer play a randomized circular game
 
 var g = Game.newCircular(radius: 8, mines: 35)
+let r = Renderer()
 
 func refresh() {
   for _ in 1...30 {
     print()
   }
-  printGameWithFlip(g)
+  print(r.render(g))
 }
 
 let actions: [(name: String, move: () -> Void)] = [
