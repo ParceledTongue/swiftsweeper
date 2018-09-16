@@ -1,35 +1,56 @@
 import Foundation
 
-var g = Game.newBeginner()
+// MARK: Setup
+
+var g = Game.newCircular(radius: 8, mines: 35)
 let r = Renderer()
 
+let blankLines = String(repeating: "\n", count: 20)
 func refresh() {
-  for _ in 1...30 {
-    print()
-  }
-  print(r.render(g))
+  print(blankLines + r.render(g))
 }
 
-let commandDict = [
-  Character("w"): { g.moveUp() },
-  Character("d"): { g.moveRight() },
-  Character("s"): { g.moveDown() },
-  Character("a"): { g.moveLeft() },
-  Character("r"): { g.reveal() },
-  Character("f"): { g.flag() }
+let stdIn = FileHandle.standardInput
+let originalTerm = enableRawMode(fileHandle: stdIn)
+
+// MARK: Command Dicts
+
+let vimStyleCommandDict: [UInt8: () -> Void] = [
+  0x6b: { g.moveUp() },    // k
+  0x6c: { g.moveRight() }, // l
+  0x6a: { g.moveDown() },  // j
+  0x68: { g.moveLeft() },  // h
+  0x66: { g.reveal() },    // f
+  0x64: { g.flag() }       // d
 ]
 
+let wasdStyleCommandDict: [UInt8: () -> Void] = [
+  0x77: { g.moveUp() },    // w
+  0x64: { g.moveRight() }, // d
+  0x73: { g.moveDown() },  // s
+  0x61: { g.moveLeft() },  // a
+  0x2e: { g.reveal() },    // .
+  0x2f: { g.flag() }       // /
+]
+
+// MARK: Main Loop
+
 refresh()
-while g.state != .won && g.state != .lost {
-  if let commands = readLine() {
-    for commandChar in commands {
-      if let cmd = commandDict[commandChar] {
-        cmd()
-      }
+var char: UInt8 = 0
+while read(stdIn.fileDescriptor, &char, 1) == 1 {
+    // detect EOF (Ctrl+D)
+    if char == 0x04 { break }
+    // run command if we recognize the key
+    if let cmd = wasdStyleCommandDict[char] {
+      cmd()
+      refresh()
     }
-  }
-  refresh()
+    // quit if the game is over
+    if g.state == .won || g.state == .lost { break }
 }
+
+// It would be also nice to disable raw input when exiting the app.
+restoreRawMode(fileHandle: stdIn, originalTerm: originalTerm)
 
 // watch the computer play a randomized game
 /*
