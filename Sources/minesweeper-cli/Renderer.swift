@@ -7,12 +7,12 @@ struct Renderer {
   enum CursorMode {
     case swap
     case highlight
-    case character(using: String)
+    case character(String)
   }
 
   init(
     style: @escaping (StyleCase) -> String = basicStyleWithColor,
-    cursorMode: CursorMode = .highlight
+    cursorMode: CursorMode = .swap
   ) {
     self.style = style
     self.cursorMode = cursorMode
@@ -111,7 +111,7 @@ struct Renderer {
     case let .icon(spaceType):
       switch spaceType {
       case .unknown: return "#"
-      case .flagged: return "X".red
+      case .flagged: return "#".red
       case .bomb:    return "*".lightBlack
       case .empty:   return "·"
       case .space:   return " "
@@ -121,10 +121,10 @@ struct Renderer {
       switch n {
       case 1:  return str.lightBlue
       case 2:  return str.lightGreen
-      case 3:  return str.lightRed
-      case 4:  return str.lightYellow
-      case 5:  return str.lightMagenta
-      case 6:  return str.lightCyan
+      case 3:  return str.lightYellow
+      case 4:  return str.lightMagenta
+      case 5:  return str.lightCyan
+      case 6:  return str.lightRed
       case 7:  return str.lightBlack
       case 8:  return str.black
       default: return str

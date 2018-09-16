@@ -1,9 +1,7 @@
 import Foundation
 
-// watch the computer play a randomized circular game
-
-var g = Game.newCircular(radius: 8, mines: 35)
-let r = Renderer(style: Renderer.mahjongStyle, cursorMode: .highlight)
+var g = Game.newBeginner()
+let r = Renderer()
 
 func refresh() {
   for _ in 1...30 {
@@ -12,7 +10,30 @@ func refresh() {
   print(r.render(g))
 }
 
-let actions: [(name: String, move: () -> Void)] = [
+let commandDict = [
+  Character("w"): { g.moveUp() },
+  Character("d"): { g.moveRight() },
+  Character("s"): { g.moveDown() },
+  Character("a"): { g.moveLeft() },
+  Character("r"): { g.reveal() },
+  Character("f"): { g.flag() }
+]
+
+refresh()
+while g.state != .won && g.state != .lost {
+  if let commands = readLine() {
+    for commandChar in commands {
+      if let cmd = commandDict[commandChar] {
+        cmd()
+      }
+    }
+  }
+  refresh()
+}
+
+// watch the computer play a randomized game
+/*
+let actions: [(name: String, do: () -> Void)] = [
   ("Up", { g.moveUp() }),
   ("Right", { g.moveRight() }),
   ("Down", { g.moveDown() }),
@@ -26,8 +47,9 @@ var moveNum = 0
 while g.state != .lost {
   sleep(UInt32(1))
   let action = actions.randomElement()!
-  action.move()
+  action.do()
   refresh()
   moveNum += 1
   print(String(moveNum) + ") " + action.name)
 }
+*/
