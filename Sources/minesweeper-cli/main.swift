@@ -3,7 +3,7 @@ import Foundation
 // MARK: Setup
 
 var g = Game.newCircular(radius: 8, mines: 35)
-let r = Renderer()
+let r = Renderer(style: Renderer.emojiStyle, cursorMode: .character("‹"))
 
 let blankLines = String(repeating: "\n", count: 20)
 func refresh() {

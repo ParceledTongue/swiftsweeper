@@ -132,6 +132,32 @@ struct Renderer {
     }
   }
 
+  static func emojiStyle(_ styleCase: StyleCase) -> String {
+    switch styleCase {
+    case let .icon(spaceType):
+      switch spaceType {
+      case .unknown: return "⬛︎"
+      case .flagged: return "🚩"
+      case .bomb:    return "💣"
+      case .empty:   return " ·"
+      case .space:   return "  "
+      }
+    case let .number(n):
+      let str = " " + String(n)
+      switch n {
+      case 1:  return str.lightBlue
+      case 2:  return str.lightGreen
+      case 3:  return str.lightYellow
+      case 4:  return str.lightMagenta
+      case 5:  return str.lightCyan
+      case 6:  return str.lightRed
+      case 7:  return str.lightBlack
+      case 8:  return str.black
+      default: return str
+      }
+    }
+  }
+
   // surprisingly playable!
   // doesn't do well with .swap
   static func mahjongStyle(_ styleCase: StyleCase) -> String {
