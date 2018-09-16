@@ -3,14 +3,17 @@ struct Game {
   let mines: Int
   var cursorAt: Coord
   var revealed: Set<Coord>
-  var flagged: Set<Coord>
+  var flagged: Set<Coord> {
+    return rawFlagged.subtracting(revealed)
+  }
+  private var rawFlagged: Set<Coord>
 
   private init(grid: Grid, mines: Int, cursorStart: Coord) {
     self.grid = grid
     self.mines = mines
     self.cursorAt = cursorStart
     self.revealed = Set()
-    self.flagged = Set()
+    self.rawFlagged = Set()
   }
 
   // MARK: Game State
@@ -63,28 +66,33 @@ struct Game {
   // MARK: Revealing
 
   mutating func reveal() {
-    if flagged.contains(cursorAt) {
-      return // never reveal a flagged spot
-    }
-
     if state == .new {
       // populate the grid if this is our first reveal
       grid.populateRandom(mines: mines, start: cursorAt)
     }
 
-    reveal(cursorAt)
-    // if you've already flagged the right number of a coord's neighbors,
-    // you can reveal all the rest by revealing the coord itself
-    let neighbors = grid.neighborsOf(cursorAt)
-    let flaggedNeighborCount = neighbors.filter { flagged.contains($0) }.count
-    if grid.adjacentMines(cursorAt) == flaggedNeighborCount {
-      for neighbor in neighbors {
-        reveal(neighbor)
+    if !revealed.contains(cursorAt) {
+      reveal(cursorAt)
+    } else {
+      // if you've already revealed this space and flagged the right number of
+      // its neighbors, you can reveal all its non-flagged neighbors by
+      // "revealing" the space itself
+      let neighbors = grid.neighborsOf(cursorAt)
+      let flaggedNeighborCount =
+        neighbors.filter { flagged.contains($0) }.count
+      if grid.adjacentMines(cursorAt) == flaggedNeighborCount {
+        for neighbor in neighbors {
+          reveal(neighbor)
+        }
       }
     }
   }
 
   private mutating func reveal(_ c: Coord) {
+    if revealed.contains(c) || flagged.contains(c) {
+      return
+    }
+
     revealed.insert(c)
 
     if grid.adjacentMines(c) == 0 {
@@ -97,10 +105,10 @@ struct Game {
   // MARK: Flagging
 
   mutating func flag() {
-    if flagged.contains(cursorAt) {
-      flagged.remove(cursorAt)
+    if rawFlagged.contains(cursorAt) {
+      rawFlagged.remove(cursorAt)
     } else {
-      flagged.insert(cursorAt)
+      rawFlagged.insert(cursorAt)
     }
   }
 
