@@ -1,0 +1,5 @@
+identifier_name:
+  min_length:
+    # for closures
+    warning: 1
+    error: 1

@@ -2,8 +2,9 @@ import Foundation
 
 // MARK: Setup
 
-var g = Game.newCircular(radius: 8, mines: 35)
-let r = Renderer(style: Renderer.emojiStyle, cursorMode: .character("‹"))
+// var g = Game.newCircular(radius: 8, mines: 35)
+var g = Game.newBeginner()
+var r = Renderer()
 
 let blankLines = String(repeating: "\n", count: 20)
 func refresh() {
@@ -46,7 +47,12 @@ while read(stdIn.fileDescriptor, &char, 1) == 1 {
       refresh()
     }
     // quit if the game is over
-    if g.state == .won || g.state == .lost { break }
+    if g.state == .won || g.state == .lost {
+      // print one last time without the cursor
+      r.cursorMode = .noCursor
+      refresh()
+      break
+    }
 }
 
 // It would be also nice to disable raw input when exiting the app.
