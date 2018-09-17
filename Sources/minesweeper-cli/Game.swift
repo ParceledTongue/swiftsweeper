@@ -3,17 +3,14 @@ struct Game {
   let mines: Int
   var cursorAt: Coord
   var revealed: Set<Coord>
-  var flagged: Set<Coord> {
-    return rawFlagged.subtracting(revealed)
-  }
-  private var rawFlagged: Set<Coord>
+  var flagged: Set<Coord>
 
   private init(grid: Grid, mines: Int, cursorStart: Coord) {
     self.grid = grid
     self.mines = mines
     self.cursorAt = cursorStart
     self.revealed = Set()
-    self.rawFlagged = Set()
+    self.flagged = Set()
   }
 
   // MARK: Game State
@@ -105,10 +102,13 @@ struct Game {
   // MARK: Flagging
 
   mutating func flag() {
-    if rawFlagged.contains(cursorAt) {
-      rawFlagged.remove(cursorAt)
+    if revealed.contains(cursorAt) {
+      return // can't flag a revealed space
+    }
+    if flagged.contains(cursorAt) {
+      flagged.remove(cursorAt)
     } else {
-      rawFlagged.insert(cursorAt)
+      flagged.insert(cursorAt)
     }
   }
 

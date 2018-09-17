@@ -38,11 +38,11 @@ struct BasicStyles {
 
   // if you really miss those flags
   static let emoji = Style(
-    unknown: "🔲",
+    unknown: "██",
     flagged: "🚩",
     bomb: "💥",
     nothing: "  ",
-    s0: " ·",
+    s0: "··",
     s1: " 1".lightBlue,
     s2: " 2".lightGreen,
     s3: " 3".lightYellow,

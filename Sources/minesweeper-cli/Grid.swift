@@ -1,4 +1,4 @@
-struct Grid {
+struct Grid: Equatable {
 
   private var dict: [Coord: Bool]
   let coords: Set<Coord>

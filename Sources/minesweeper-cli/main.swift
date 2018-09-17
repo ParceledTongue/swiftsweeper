@@ -2,8 +2,7 @@ import Foundation
 
 // MARK: Setup
 
-// var g = Game.newCircular(radius: 8, mines: 35)
-var g = Game.newBeginner()
+var g = Game.newCircular(radius: 10, mines: 54)
 var r = Renderer()
 
 let blankLines = String(repeating: "\n", count: 20)
@@ -49,7 +48,7 @@ while read(stdIn.fileDescriptor, &char, 1) == 1 {
     // quit if the game is over
     if g.state == .won || g.state == .lost {
       // print one last time without the cursor
-      r.cursorMode = .noCursor
+      r = r.using(newCursorMode: .noCursor)
       refresh()
       break
     }
