@@ -1,3 +1,6 @@
 # minesweeper-cli
 
-A description of this package.
+```
+> swift build
+> .build/debug/minesweeper-cli
+```
