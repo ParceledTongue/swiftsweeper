@@ -1,6 +1,6 @@
 # minesweeper-cli
 
-```
-> swift build
-> .build/debug/minesweeper-cli
+```console
+$ swift build
+$ .build/debug/minesweeper-cli
 ```
